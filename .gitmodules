@@ -1,0 +1,9 @@
+[submodule "Backend/manifesto-service"]
+	path = Backend/manifesto-service
+	url = https://github.com/Koitech-Log/newelog-manifesto-service
+[submodule "Backend/motorista-service"]
+	path = Backend/motorista-service
+	url = https://github.com/Koitech-Log/newelog-motoristas-service
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/Koitech-Log/newelog-frota-web
