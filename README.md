@@ -1,95 +1,86 @@
-# [Nome do Projeto] — [Módulo / Camada, ex: Backend / API]
+# NEWELOG — Repositório principal
 
 > Projeto Integrador 3º Semestre · DSM · FATEC São José dos Campos  
-> **Cliente:** NEWE Logística Integrada  
-> **Repositório principal:** [Nome/Link do Repositório Principal]
+> **Equipe:** Koitech-Log  
+> **Cliente:** NEWE Logística Integrada
 
 ---
 
 ## 📖 Sobre
 
-[Descreva brevemente o propósito deste microserviço, qual problema ele resolve dentro do sistema e qual o seu papel na arquitetura geral.]
+O **NEWELOG** é um sistema de gestão de frota com motoristas agregados da NEWE Logística Integrada. Ele cobre o cadastro de motoristas e veículos, a importação de manifestos em CSV, o dashboard de rentabilidade e a autenticação de usuários.
+
+O sistema usa **microsserviços**. Cada serviço fica no próprio repositório da organização [Koitech-Log](https://github.com/Koitech-Log). Este repositório reúne todos eles como **git submodules**, então um único clone traz o projeto inteiro.
+
+---
+
+## 🧩 Serviços
+
+| Serviço | Pasta | Repositório | Porta | Responsabilidade |
+| :--- | :--- | :--- | :--- | :--- |
+| Auth Service | `Backend/auth-service` | [newelog-auth-service](https://github.com/Koitech-Log/newelog-auth-service) | `8082` | Login, emissão de JWT e gestão de usuários |
+| Motoristas Service | `Backend/motorista-service` | [newelog-motoristas-service](https://github.com/Koitech-Log/newelog-motoristas-service) | `8080` | Motoristas, veículos, viagens e dashboard |
+| Manifesto Service | `Backend/manifesto-service` | [newelog-manifesto-service](https://github.com/Koitech-Log/newelog-manifesto-service) | `8081` | Importação de manifestos CSV, integrada ao motoristas-service |
+| Frontend | `frontend` | [newelog-frota-web](https://github.com/Koitech-Log/newelog-frota-web) | `5173` | Interface web (React + TypeScript + Vite) |
+
+Todos os serviços de backend validam o mesmo **JWT (HS256)** emitido pelo `auth-service`. Por isso, o `JWT_SECRET` precisa ser **igual** em todos eles.
 
 ---
 
 ## 🛠️ Tecnologias
 
-| Tecnologia | Versão | Uso |
-| :--- | :--- | :--- |
-| `[Tecnologia 1]` | `[Versão]` | `[Ex: Framework principal]` |
-| `[Tecnologia 2]` | `[Versão]` | `[Ex: Banco de dados / ORM]` |
-| `[Tecnologia 3]` | `[Versão]` | `[Ex: Gerenciador de dependências]` |
+| Tecnologia | Uso |
+| :--- | :--- |
+| Java 21 + Spring Boot 3.5 | Microsserviços de backend |
+| Spring Security + JWT | Autenticação e autorização |
+| PostgreSQL 16 + Flyway | Banco de dados e migrations (auth e motoristas) |
+| React + TypeScript + Vite | Frontend |
+| Docker / Docker Compose | Execução local dos serviços e bancos |
+| GitHub Actions | CI (build e testes) |
 
 ---
 
-## ⚙️ Pré-requisitos
-
-* `[Ferramenta 1]` (ex: Node.js 18+ / Java 17+ / Python 3.10+)
-* `[Ferramenta 2]` (ex: npm / Maven / Pip)
-* `[Dependência externa, ex: Banco de dados PostgreSQL rodando localmente ou via Docker]`
-
----
-
-## 🚀 Como executar
+## 🚀 Como começar
 
 ```bash
-# 1. Clone o repositório
-git clone [URL_DO_REPOSITORIO]
-cd [NOME_DA_PASTA]
+# 1. Clone o repositório já com todos os submodules
+git clone --recurse-submodules https://github.com/Koitech-Log/Koitech-Log-3DSM-Newelog.git
+cd Koitech-Log-3DSM-Newelog
 
-# 2. Instale as dependências / Configure o ambiente
-[comando de instalação, ex: npm install / mvn clean install]
+# Se já clonou sem --recurse-submodules:
+git submodule update --init --recursive
 
-# 3. Configure as variáveis de ambiente (crie um arquivo .env na raiz)
-[NOME_DA_VARIAVEL]=[VALOR_EXEMPLO]
-
-# 4. Inicie o serviço
-[comando para rodar, ex: npm run dev / ./mvnw spring-boot:run]
+# 2. Atualize os submodules para o último commit da main de cada serviço
+git submodule update --remote
 ```
 
-Acesse: `[URL de acesso, ex: http://localhost:8080]`
+Depois, suba cada serviço seguindo o README dele. Ordem sugerida:
+
+1. **auth-service:** `cd Backend/auth-service && cp .env.example .env && docker compose up --build`
+2. **motorista-service:** `cd Backend/motorista-service && cp .env.example .env && docker compose up --build`
+3. **manifesto-service:** `cd Backend/manifesto-service && cp .env.example .env && ./mvnw spring-boot:run`
+4. **frontend:** `cd frontend && cp .env.example .env && npm install && npm run dev`
+
+Acesse em `http://localhost:5173`.
+
+> ⚠️ Preencha o `JWT_SECRET` com o **mesmo valor** em todos os `.env` de backend (mínimo de 32 caracteres; gere com `openssl rand -base64 48`).
 
 ---
 
-## 💻 Outros comandos úteis
+## 📚 Documentação
 
-```bash
-# Build de produção / Empacotamento
-[comando de build]
-
-# Executar testes unitários / integrados
-[comando de testes]
-
-# Verificar formatação / Lint
-[comando de lint]
-```
+| Documento | Conteúdo |
+| :--- | :--- |
+| [Estrutura do projeto](docs/ESTRUTURA-DO-PROJETO.md) | Organização das pastas, submodules e papel de cada serviço |
+| [Modelo de branches](docs/MODELO-DE-BRANCHES.md) | Fluxo de trabalho com `main`, `develop` e branches de funcionalidade |
+| [Documentos do projeto](https://github.com/Koitech-Log/Documentos) | Documentação da API do 3º semestre |
 
 ---
 
-## 📂 Estrutura do projeto
+## 🌿 Fluxo de trabalho (resumo)
 
 ```text
-[nome-do-repositorio]/
-├── [pasta-1]/          # Descrição do diretório
-├── [pasta-2]/          # Descrição do diretório
-└── README.md
+feature/* ──► develop ──► main
 ```
 
----
-
-## 🔐 Variáveis de ambiente
-
-Crie um arquivo `.env` na raiz do projeto contendo as seguintes chaves:
-
-```env
-[CHAVE_1]=[valor_exemplo]
-[CHAVE_2]=[valor_exemplo]
-```
-
----
-
-## 🔗 Endpoints / Módulos Principais
-
-| Rota / Endpoint | Método | Descrição | Perfil / Acesso |
-| :--- | :--- | :--- | :--- |
-| `[ex: /api/v1/recurso]` | `[GET/POST]` | `[Descrição da funcionalidade]` | `[Ex: Autenticado / Admin]` |
+Cada funcionalidade é desenvolvida em uma branch própria a partir da `develop` e entra nela por Pull Request. Depois de testada, a `develop` é integrada à `main`, que guarda sempre a versão estável. Os detalhes estão em [docs/MODELO-DE-BRANCHES.md](docs/MODELO-DE-BRANCHES.md).
