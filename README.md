@@ -10,7 +10,9 @@
 
 O **NEWELOG** é um sistema de gestão de frota com motoristas agregados da NEWE Logística Integrada. Ele cobre o cadastro de motoristas e veículos, a importação de manifestos em CSV, o dashboard de rentabilidade e a autenticação de usuários.
 
-O sistema usa **microsserviços**. Cada serviço fica no próprio repositório da organização [Koitech-Log](https://github.com/Koitech-Log). Este repositório reúne todos eles como **git submodules**, então um único clone traz o projeto inteiro.
+O sistema usa **microsserviços**, divididos por capacidade de negócio. Cada serviço fica no próprio repositório da organização [Koitech-Log](https://github.com/Koitech-Log). Este repositório reúne todos eles como **git submodules**, então um único clone traz o projeto inteiro.
+
+A documentação de produto (problema, solução, backlog, sprints, DoR/DoD e padrão de commit) fica no repositório [Documentos](https://github.com/Koitech-Log/Documentos).
 
 ---
 
@@ -19,11 +21,52 @@ O sistema usa **microsserviços**. Cada serviço fica no próprio repositório d
 | Serviço | Pasta | Repositório | Porta | Responsabilidade |
 | :--- | :--- | :--- | :--- | :--- |
 | Auth Service | `Backend/auth-service` | [newelog-auth-service](https://github.com/Koitech-Log/newelog-auth-service) | `8082` | Login, emissão de JWT e gestão de usuários |
-| Motoristas Service | `Backend/motorista-service` | [newelog-motoristas-service](https://github.com/Koitech-Log/newelog-motoristas-service) | `8080` | Motoristas, veículos, viagens e dashboard |
-| Manifesto Service | `Backend/manifesto-service` | [newelog-manifesto-service](https://github.com/Koitech-Log/newelog-manifesto-service) | `8081` | Importação de manifestos CSV, integrada ao motoristas-service |
-| Frontend | `frontend` | [newelog-frota-web](https://github.com/Koitech-Log/newelog-frota-web) | `5173` | Interface web (React + TypeScript + Vite) |
+| Motoristas Service | `Backend/motorista-service` | [newelog-motoristas-service](https://github.com/Koitech-Log/newelog-motoristas-service) | `8080` | Motoristas, veículos, viagens, dashboard financeiro e rentabilidade média |
+| Manifesto Service | `Backend/manifesto-service` | [newelog-manifesto-service](https://github.com/Koitech-Log/newelog-manifesto-service) | `8081` | Importação de CSV (manifestos e veículos), integrada ao motoristas-service |
+| Frontend | `frontend` | [newelog-frota-web](https://github.com/Koitech-Log/newelog-frota-web) | `5173` | Interface web (React + TypeScript + Vite): login, Visão geral, Motoristas e importações |
 
 Todos os serviços de backend validam o mesmo **JWT (HS256)** emitido pelo `auth-service`. Por isso, o `JWT_SECRET` precisa ser **igual** em todos eles.
+
+```mermaid
+flowchart LR
+    W[frota-web :5173] -->|login| A[auth-service :8082]
+    W -->|motoristas, dashboard| M[motoristas-service :8080]
+    W -->|upload CSV| I[manifesto-service :8081]
+    I -->|valida e cadastra| M
+    A --- DBA[(Postgres auth)]
+    M --- DBM[(Postgres motoristas)]
+```
+
+### Outros repositórios da organização
+
+| Repositório | Papel |
+| :--- | :--- |
+| [Documentos](https://github.com/Koitech-Log/Documentos) | Documentação do projeto: backlog, sprints, DoR/DoD, equipe |
+| [newelog-service-template](https://github.com/Koitech-Log/newelog-service-template) | Modelo-base (template do GitHub) para criar novos microsserviços |
+
+### Planejados
+
+A estratégia de microsserviços prevê ainda os itens abaixo, que **ainda não existem**:
+
+| Item | Responsabilidade prevista |
+| :--- | :--- |
+| API Gateway (Spring Cloud Gateway) | Roteamento, agregação e CORS em um único ponto de entrada. Será implementado neste repositório; hoje a raiz só tem o esqueleto Spring Boot do template, e o front-end chama cada serviço direto |
+| `newelog-ranking-service` | Pontuação e ranking mensal de motoristas e veículos, com regras de valorização de rotas (Sprint 3, Épico 12) |
+| `newelog-export-service` | Geração de relatórios e planilhas sob demanda |
+| `newelog-infra` | `docker-compose` único, scripts de bootstrap e documentação de arquitetura |
+| `.github` | Workflows reutilizáveis, templates de issue/PR e perfil da organização |
+
+---
+
+## 🗓️ Sprints
+
+| Sprint | Período | Entregas |
+| :--- | :--- | :--- |
+| 1 | 07/09 – 27/09 | Carga inicial e CRUD de motoristas, painel de disponibilidade, upload de manifesto |
+| 2 | 05/10 – 25/10 | Login e perfis (Gestor/Operador), dashboard financeiro com rentabilidade média e filtro por mês, cadastro de veículos por CSV com validação e resumo |
+| 3 | 02/11 – 22/11 | Em andamento: cadastro e gestão de usuários e perfis com histórico, regras de valorização de rotas e ranking mensal da frota |
+
+Detalhes de cada sprint em [Documentos/Sprints](https://github.com/Koitech-Log/Documentos/tree/main/Sprints).
 
 ---
 
