@@ -110,6 +110,16 @@ Acesse em `http://localhost:5173`.
 
 ---
 
+## 📚 Documentação
+
+| Documento | Conteúdo |
+| :--- | :--- |
+| [Estrutura do projeto](docs/ESTRUTURA-DO-PROJETO.md) | Organização das pastas, submodules e papel de cada serviço |
+| [Modelo de branches](docs/MODELO-DE-BRANCHES.md) | Fluxo de trabalho com `main`, `develop` e branches de funcionalidade |
+| [Documentos do projeto](https://github.com/Koitech-Log/Documentos) | Backlog, sprints, DoR/DoD e equipe |
+
+---
+
 ## 🌿 Fluxo de trabalho (resumo)
 
 ```text
