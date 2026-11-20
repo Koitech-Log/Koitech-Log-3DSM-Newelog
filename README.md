@@ -23,7 +23,7 @@ A documentação de produto (problema, solução, backlog, sprints, DoR/DoD e pa
 | Auth Service | `Backend/auth-service` | [newelog-auth-service](https://github.com/Koitech-Log/newelog-auth-service) | `8082` | Login, emissão de JWT e gestão de usuários |
 | Motoristas Service | `Backend/motorista-service` | [newelog-motoristas-service](https://github.com/Koitech-Log/newelog-motoristas-service) | `8080` | Motoristas, veículos, viagens, dashboard financeiro e rentabilidade média |
 | Manifesto Service | `Backend/manifesto-service` | [newelog-manifesto-service](https://github.com/Koitech-Log/newelog-manifesto-service) | `8081` | Importação de CSV (manifestos e veículos), integrada ao motoristas-service |
-| Ranking Service | — (ainda não é submodule) | [newelog-ranking-service](https://github.com/Koitech-Log/newelog-ranking-service) | `8083` | Pontuação e ranking mensal de motoristas e veículos, com valorização de viagens para SP e limite de viagens por mês. Sem banco próprio: lê as viagens do motoristas-service |
+| Ranking Service | `Backend/ranking-service` | [newelog-ranking-service](https://github.com/Koitech-Log/newelog-ranking-service) | `8083` | Pontuação e ranking mensal de motoristas e veículos, com valorização de viagens para SP e limite de viagens por mês. Sem banco próprio: lê as viagens do motoristas-service |
 | Frontend | `frontend` | [newelog-frota-web](https://github.com/Koitech-Log/newelog-frota-web) | `5173` | Interface web (React + TypeScript + Vite): login, Visão geral, Motoristas, Ranking e importações |
 
 Todos os serviços de backend validam o mesmo **JWT (HS256)** emitido pelo `auth-service`. Por isso, o `JWT_SECRET` precisa ser **igual** em todos eles. O front-end chama cada serviço diretamente.
@@ -93,7 +93,7 @@ Depois, suba cada serviço seguindo o README dele. Ordem sugerida:
 1. **auth-service:** `cd Backend/auth-service && cp .env.example .env && docker compose up --build`
 2. **motorista-service:** `cd Backend/motorista-service && cp .env.example .env && docker compose up --build`
 3. **manifesto-service:** `cd Backend/manifesto-service && cp .env.example .env && ./mvnw spring-boot:run`
-4. **ranking-service** (clone à parte, ainda não é submodule): `git clone https://github.com/Koitech-Log/newelog-ranking-service.git`, depois `cp .env.example .env`, carregue as variáveis no terminal e rode `./mvnw spring-boot:run` (veja o README dele)
+4. **ranking-service:** `cd Backend/ranking-service && cp .env.example .env`, carregue as variáveis no terminal e rode `./mvnw spring-boot:run` (veja o README do serviço)
 5. **frontend:** `cd frontend && cp .env.example .env && npm install && npm run dev`
 
 Acesse em `http://localhost:5173`.
