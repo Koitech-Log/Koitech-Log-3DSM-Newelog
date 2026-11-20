@@ -23,16 +23,19 @@ A documentação de produto (problema, solução, backlog, sprints, DoR/DoD e pa
 | Auth Service | `Backend/auth-service` | [newelog-auth-service](https://github.com/Koitech-Log/newelog-auth-service) | `8082` | Login, emissão de JWT e gestão de usuários |
 | Motoristas Service | `Backend/motorista-service` | [newelog-motoristas-service](https://github.com/Koitech-Log/newelog-motoristas-service) | `8080` | Motoristas, veículos, viagens, dashboard financeiro e rentabilidade média |
 | Manifesto Service | `Backend/manifesto-service` | [newelog-manifesto-service](https://github.com/Koitech-Log/newelog-manifesto-service) | `8081` | Importação de CSV (manifestos e veículos), integrada ao motoristas-service |
-| Frontend | `frontend` | [newelog-frota-web](https://github.com/Koitech-Log/newelog-frota-web) | `5173` | Interface web (React + TypeScript + Vite): login, Visão geral, Motoristas e importações |
+| Ranking Service | `Backend/ranking-service` | [newelog-ranking-service](https://github.com/Koitech-Log/newelog-ranking-service) | `8083` | Pontuação e ranking mensal de motoristas e veículos, com valorização de viagens para SP e limite de viagens por mês. Sem banco próprio: lê as viagens do motoristas-service |
+| Frontend | `frontend` | [newelog-frota-web](https://github.com/Koitech-Log/newelog-frota-web) | `5173` | Interface web (React + TypeScript + Vite): login, Visão geral, Motoristas, Ranking e importações |
 
-Todos os serviços de backend validam o mesmo **JWT (HS256)** emitido pelo `auth-service`. Por isso, o `JWT_SECRET` precisa ser **igual** em todos eles.
+Todos os serviços de backend validam o mesmo **JWT (HS256)** emitido pelo `auth-service`. Por isso, o `JWT_SECRET` precisa ser **igual** em todos eles. O front-end chama cada serviço diretamente.
 
 ```mermaid
 flowchart LR
     W[frota-web :5173] -->|login| A[auth-service :8082]
     W -->|motoristas, dashboard| M[motoristas-service :8080]
     W -->|upload CSV| I[manifesto-service :8081]
+    W -->|ranking| R[ranking-service :8083]
     I -->|valida e cadastra| M
+    R -->|viagens do mês| M
     A --- DBA[(Postgres auth)]
     M --- DBM[(Postgres motoristas)]
 ```
@@ -44,18 +47,6 @@ flowchart LR
 | [Documentos](https://github.com/Koitech-Log/Documentos) | Documentação do projeto: backlog, sprints, DoR/DoD, equipe |
 | [newelog-service-template](https://github.com/Koitech-Log/newelog-service-template) | Modelo-base (template do GitHub) para criar novos microsserviços |
 
-### Planejados
-
-A estratégia de microsserviços prevê ainda os itens abaixo, que **ainda não existem**:
-
-| Item | Responsabilidade prevista |
-| :--- | :--- |
-| API Gateway (Spring Cloud Gateway) | Roteamento, agregação e CORS em um único ponto de entrada. Será implementado neste repositório; hoje a raiz só tem o esqueleto Spring Boot do template, e o front-end chama cada serviço direto |
-| `newelog-ranking-service` | Pontuação e ranking mensal de motoristas e veículos, com regras de valorização de rotas (Sprint 3, Épico 12) |
-| `newelog-export-service` | Geração de relatórios e planilhas sob demanda |
-| `newelog-infra` | `docker-compose` único, scripts de bootstrap e documentação de arquitetura |
-| `.github` | Workflows reutilizáveis, templates de issue/PR e perfil da organização |
-
 ---
 
 ## 🗓️ Sprints
@@ -64,7 +55,7 @@ A estratégia de microsserviços prevê ainda os itens abaixo, que **ainda não 
 | :--- | :--- | :--- |
 | 1 | 07/09 – 27/09 | Carga inicial e CRUD de motoristas, painel de disponibilidade, upload de manifesto |
 | 2 | 05/10 – 25/10 | Login e perfis (Gestor/Operador), dashboard financeiro com rentabilidade média e filtro por mês, cadastro de veículos por CSV com validação e resumo |
-| 3 | 02/11 – 22/11 | Em andamento: cadastro e gestão de usuários e perfis com histórico, regras de valorização de rotas e ranking mensal da frota |
+| 3 | 02/11 – 22/11 | Em andamento: cadastro e gestão de usuários e perfis com histórico, regras de valorização de rotas e ranking mensal da frota (`newelog-ranking-service` e tela Ranking) |
 
 Detalhes de cada sprint em [Documentos/Sprints](https://github.com/Koitech-Log/Documentos/tree/main/Sprints).
 
@@ -102,7 +93,8 @@ Depois, suba cada serviço seguindo o README dele. Ordem sugerida:
 1. **auth-service:** `cd Backend/auth-service && cp .env.example .env && docker compose up --build`
 2. **motorista-service:** `cd Backend/motorista-service && cp .env.example .env && docker compose up --build`
 3. **manifesto-service:** `cd Backend/manifesto-service && cp .env.example .env && ./mvnw spring-boot:run`
-4. **frontend:** `cd frontend && cp .env.example .env && npm install && npm run dev`
+4. **ranking-service:** `cd Backend/ranking-service && cp .env.example .env`, carregue as variáveis no terminal e rode `./mvnw spring-boot:run` (veja o README do serviço)
+5. **frontend:** `cd frontend && cp .env.example .env && npm install && npm run dev`
 
 Acesse em `http://localhost:5173`.
 
