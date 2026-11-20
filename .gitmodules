@@ -14,3 +14,7 @@
 	path = Backend/auth-service
 	url = https://github.com/Koitech-Log/newelog-auth-service
 	branch = main
+[submodule "Backend/ranking-service"]
+	path = Backend/ranking-service
+	url = https://github.com/Koitech-Log/newelog-ranking-service
+	branch = main
