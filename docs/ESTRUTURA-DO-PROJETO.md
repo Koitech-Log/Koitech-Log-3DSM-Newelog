@@ -9,7 +9,8 @@ Koitech-Log-3DSM-Newelog/
 ├── Backend/
 │   ├── auth-service/          # submodule → newelog-auth-service
 │   ├── manifesto-service/     # submodule → newelog-manifesto-service
-│   └── motorista-service/     # submodule → newelog-motoristas-service
+│   ├── motorista-service/     # submodule → newelog-motoristas-service
+│   └── ranking-service/       # submodule → newelog-ranking-service
 ├── frontend/                  # submodule → newelog-frota-web
 ├── docs/                      # documentação geral do projeto
 │   ├── ESTRUTURA-DO-PROJETO.md
@@ -48,14 +49,19 @@ Todos os submodules acompanham a branch `main` do seu repositório (`branch = ma
 ┌───────────────┐        ┌────────────────────┐        ┌────────────────────┐
 │ auth-service  │        │ motorista-service  │◄───────│ manifesto-service  │
 │     :8082     │        │       :8080        │  REST  │       :8081        │
-└───────┬───────┘        └─────────┬──────────┘        └────────────────────┘
-        ▼                          ▼                     (sem banco próprio)
-   PostgreSQL                 PostgreSQL
-   (auth_db)               (motoristas_db)
+└───────┬───────┘        └──┬──────────────▲──┘        └────────────────────┘
+        ▼                   ▼              │ REST        (sem banco próprio)
+   PostgreSQL          PostgreSQL          │
+   (auth_db)         (motoristas_db)    ┌──┴─────────────────┐
+                                        │  ranking-service   │◄── Frontend
+                                        │       :8083        │
+                                        └────────────────────┘
+                                          (sem banco próprio)
 ```
 
 - O **auth-service** emite o JWT no login. Os demais serviços validam o token com o mesmo `JWT_SECRET`.
 - O **manifesto-service** recebe o CSV, extrai os registros e chama o **motorista-service** para validar e cadastrar os motoristas, repassando o token do usuário.
+- O **ranking-service** lê as viagens do mês no **motorista-service**, calcula a pontuação e devolve o ranking de motoristas e veículos, também repassando o token do usuário.
 - Cada serviço com persistência tem **banco próprio** (database per service), com migrations versionadas pelo Flyway.
 
 ## Serviços
@@ -83,12 +89,20 @@ Todos os submodules acompanham a branch `main` do seu repositório (`branch = ma
 - **Pacotes:** `br.com.newelog` → `config`, `controller`, `dto`, `service`, `validation`.
 - Depende da variável `MOTORISTAS_SERVICE_URL`.
 
+### `Backend/ranking-service`: ranking mensal
+
+- **Stack:** Java 21, Spring Boot, Spring Security (resource server JWT), RestClient.
+- **Porta:** `8083`. Não tem banco: lê as viagens do motorista-service.
+- **Rota principal:** `GET /ranking?ano&mes&tipo&busca` (somente gestor).
+- **Pacotes:** `br.com.newelog.ranking` → `client`, `config`, `controller`, `dto`, `service`.
+- Depende da variável `MOTORISTAS_SERVICE_URL`. A pontuação usa `RANKING_MAX_VIAGENS` e `RANKING_FATOR_SP`.
+
 ### `frontend`: interface web
 
 - **Stack:** React, TypeScript, Vite, oxlint.
 - **Porta:** `5173`.
 - **Pastas em `src/`:** `api` (chamadas HTTP), `components`, `context`, `hooks`, `pages`, `types`, `utils`, `assets`.
-- **Variáveis:** `VITE_API_BASE_URL` (motoristas), `VITE_MANIFESTO_SERVICE_URL`, `VITE_AUTH_SERVICE_URL`.
+- **Variáveis:** `VITE_API_BASE_URL` (motoristas), `VITE_MANIFESTO_SERVICE_URL`, `VITE_AUTH_SERVICE_URL`, `VITE_RANKING_SERVICE_URL`.
 
 ## Template de microsserviço (raiz)
 
@@ -110,5 +124,5 @@ Para criar um novo microsserviço:
 ## Configuração e segredos
 
 - Cada serviço tem um `.env.example` documentando as variáveis. Copie para `.env` e preencha. O `.env` **nunca** é versionado.
-- O `JWT_SECRET` precisa ser o **mesmo** no auth, motorista e manifesto service.
+- O `JWT_SECRET` precisa ser o **mesmo** no auth, motorista, manifesto e ranking service.
 - Os detalhes de execução de cada serviço estão no README do próprio serviço.
